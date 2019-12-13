@@ -1,0 +1,17 @@
+#### CONSTRUCCION MVN PACKAGE (JAR) ####
+FROM maven:3.6-jdk-8-alpine AS builder
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn -B -e -C -T 1C org.apache.maven.plugins:maven-dependency-plugin:3.0.2:go-offline
+
+COPY src ./src
+RUN mvn clean package -Dmaven.test.skip=true
+
+#### EJECUCION DEL JAR DE SPRING BOOT####
+# we are extending everything from tomcat:8.0 image ...
+FROM tomcat:8.0
+MAINTAINER mechague@sodep.com.py
+# COPY path-to-your-application-war path-to-webapps-in-docker-tomcat
+COPY app/target/*.war /usr/local/tomcat/webapps/
+EXPOSE 8080

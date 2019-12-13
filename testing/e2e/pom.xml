@@ -1,0 +1,192 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>e2e-test</artifactId>
+	<groupId>com.wjma90.testing</groupId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>java-junit-cucumber</name>
+	<description>maven + junit + cucumber</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+	</properties>
+
+	<dependencies>
+        <!-- libraries for testing e2e -->
+
+		<!-- Selenium (use a browser) -->
+        <dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>3.141.59</version>
+		</dependency>
+
+        <!-- saucelabs remote server-->
+		<dependency>
+			<groupId>com.saucelabs</groupId>
+			<artifactId>saucerest</artifactId>
+			<version>1.0.42</version>
+		</dependency>
+
+		<!-- cucumber config-->
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-java</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-core</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<!-- junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+
+        <!-- read yml -->
+        <dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+
+		<!-- json path to search in json -->
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+
+        <!-- log4j -->
+        <dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+	</dependencies>
+
+	<profiles>
+		
+        <profile>
+			<id>e2e-local</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.0</version>
+						<configuration>
+							<systemProperties>
+								<property>
+									<name>environment</name>
+									<value>LOCAL</value>
+								</property>
+								<property>
+									<name>browser</name>
+									<value>${browser}</value>
+								</property>
+							</systemProperties>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>e2e-remote</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.0</version>
+						<configuration>
+							<systemProperties>
+								<property>
+									<name>environment</name>
+									<value>REMOTE</value>
+								</property>
+								<!--
+								<property>
+									<name>platform</name>
+									<value>${platform}</value>
+								</property>
+								<property>
+									<name>SAUCE_USER</name>
+									<value>${SAUCE_USER}</value>
+								</property>
+								<property>
+									<name>SAUCE_KEY</name>
+									<value>${SAUCE_KEY}</value>
+								</property>
+								<property>
+									<name>saucelabs.proxy</name>
+									<value>${saucelabs.proxy}</value>
+								</property>
+								-->
+							</systemProperties>
+							<parallel>methods</parallel> <!-- must use "methods" or "both" here -->
+							<threadCount>5</threadCount>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>cucumber-report</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.trivago.rta</groupId>
+						<artifactId>cluecumber-report-plugin</artifactId>
+						<version>2.2.0</version>
+						<executions>
+							<execution>
+								<id>report</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>reporting</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<sourceJsonReportDirectory>${project.build.directory}/cucumber-reports</sourceJsonReportDirectory>
+							<generatedHtmlReportDirectory>${project.build.directory}/generated-report</generatedHtmlReportDirectory>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+</project>

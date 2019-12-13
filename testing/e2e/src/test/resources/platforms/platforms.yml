@@ -1,0 +1,12 @@
+windows_10_chrome_65:
+  platform: Windows 10
+  browserName: chrome
+  version: '65.0'
+windows_7_ff_62:
+  platform: Windows 7
+  browserName: firefox
+  version: '62.0'
+linux_chrome_48:
+  platform: Linux
+  browserName: Chrome
+  version: '48.0'

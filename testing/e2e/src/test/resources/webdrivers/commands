@@ -1,0 +1,7 @@
+sudo chmod 777 /home/jose/Projects/bnet-pri-zona-privada/acceptance/src/test/resources/webdrivers/chromedriver
+
+tm --framework cucumber --type e2e --app bnet-pri-zona-privada --env devops --branch develop . -r '*.json' --tm https://bot-testmanager-pe-devops:2rRwRSkr9744Ux3o@globaldevtools.bbva.com/test-manager-api --ns peru --saucelabsUser BBVA_PERU --saucelabsPass 5c43b072-e1dd-4df7-b1b0-fa5ac8d3af08
+
+curl -u BBVA_PERU:5c43b072-e1dd-4df7-b1b0-fa5ac8d3af08 -X POST -H 'Content-Type: application/octet-stream' 'https://saucelabs.com/rest/v1/storage/BBVA_PERU/e2e.apk?overwrite=true' --data-binary @e2e.apk
+
+

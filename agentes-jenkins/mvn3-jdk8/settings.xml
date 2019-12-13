@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!--
+<proxies> 
+	<proxy> 
+		<id>bbva</id> 
+		<active>true</active> 
+		<protocol>http</protocol>
+		<username>USUARIO</username> 
+		<password>CLAVE</password>
+		<host>proxy.pe.domain</host> 
+		<port>8080</port> 
+		<nonProxyHosts>127.0.0.1|localhost</nonProxyHosts>
+	</proxy>
+</proxies>
+--> 
+
+  <pluginGroups>
+    <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+  </pluginGroups>
+
+  <servers>
+    <server>
+      <id>central</id>
+      <username>${env.ARTIFACTORY_CREDENTIALS_USR}</username>
+      <password>${env.ARTIFACTORY_CREDENTIALS_PSW}</password>
+    </server>
+  </servers>
+
+  <profiles>
+    <profile>
+      <repositories>
+      
+        <repository>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>repository-devops</name>
+          <url>http://artifactory:8081/artifactory/${ARTIFACTORY_REPOSITORY}</url>
+        </repository>
+
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>repository-devops</name>
+          <url>http://artifactory:8081/artifactory/${ARTIFACTORY_REPOSITORY}</url>
+        </pluginRepository>
+
+      </pluginRepositories>
+      <id>artifactory</id>
+    </profile>
+    <profile>
+      <id>sonar</id>
+      <activation>
+          <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+          <sonar.host.url>${env.SONAR_HOST}</sonar.host.url>
+          <!--<sonar.login>${env.SONAR_TOKEN}</sonar.login>-->
+      </properties>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>artifactory</activeProfile>
+  </activeProfiles>
+</settings>

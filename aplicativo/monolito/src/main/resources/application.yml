@@ -1,0 +1,25 @@
+server:
+  port: 8090
+
+userPoolId: ${userPoolId}
+regionAWS: ${aws_Region}
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  datasource:
+    url: jdbc:mysql://${host}:3306/geoserviciosbd?useUnicode=true&characterEncoding=utf8&useSSL=false&requireSSL=false
+    username: ${username}
+    password: ${password}
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+      

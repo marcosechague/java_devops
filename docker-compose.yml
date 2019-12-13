@@ -1,0 +1,86 @@
+version: '3.4'
+
+services:
+
+  # postgresql_generic:
+  #   image: docker.bintray.io/postgres:9.6.11
+  #   ports:
+  #    - 5433:5432
+  #   environment:
+  #    - POSTGRES_DB=generic
+  #    - POSTGRES_USER=generic
+  #    - POSTGRES_PASSWORD=generic
+  #   volumes:
+  #    - data-postgresql-generic:/var/lib/postgresql/data
+  #   restart: always
+  #   ulimits:
+  #     nproc: 65535
+  #     nofile:
+  #       soft: 32000
+  #       hard: 40000
+
+  # bitbucket:
+  #   image: atlassian/bitbucket-server:6.7
+  #   ports:
+  #     - 7990:7990
+  #     - 7999:7999
+  #   depends_on:
+  #     - postgresql_generic
+  #   volumes:
+  #     - data-bitbucket:/var/atlassian/application-data/bitbucket/shared
+  #   environment:
+  #     - ELASTICSEARCH_ENABLED=false
+  #     - JDBC_DRIVER=org.postgresql.Driver
+  #     - JDBC_USER=generic
+  #     - JDBC_PASSWORD=generic
+  #     - JDBC_URL=jdbc:postgresql://postgresql_generic:5432/generic
+  #   restart: always
+
+  # sonarqube:
+  #   image: sonarqube:7.9.1-community
+  #   ports:
+  #     - 9000:9000
+  #   # depends_on:
+  #   #   - postgresql_generic
+  #   volumes:
+  #     - sonarqube_conf:/opt/sonarqube/conf
+  #     - sonarqube_data:/opt/sonarqube/data
+  #     - sonarqube_extensions:/opt/sonarqube/extensions
+  #   # environment:
+  #   #   - sonar.jdbc.username=generic
+  #   #   - sonar.jdbc.password=generic
+  #   #   - sonar.jdbc.url=jdbc:postgresql://postgresql_generic/generic
+  #   restart: always
+  #   ulimits:
+  #     nproc: 65535
+  #     nofile:
+  #       soft: 32000
+  #       hard: 40000
+
+  jenkins:
+    image: jenkinsci/blueocean:1.19.0
+    # For windows
+    # environment:
+    #   - DOCKER_HOST=tcp://host.docker.internal:2375
+    user: root
+    ports:
+      - "8181:8080"
+      - "8443:8443"
+      - "50000:50000"
+    # depends_on: 
+    #   - sonarqube
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/marcos/.m2:/home/.m2
+      - ./aplicativo/angular/node_modules:/home/node_modules
+
+volumes:
+  data-postgresql:
+  data-postgresql-generic:
+  data-artifactory:
+  data-bitbucket:
+  sonarqube_conf:
+  sonarqube_data:
+  sonarqube_extensions:
+  jenkins-data:
