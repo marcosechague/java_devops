@@ -1,9 +1,19 @@
 pipeline {
-    agent { docker { image 'maven:3.3.3' } }
+    agent { any }
+     tools {
+        maven 'mvn', 
+        java 'jdk8'
+    }
     stages {
         stage('build') {
             steps {
-                sh 'mvn --version'
+                sh 'mvn -f aplicativo/monolito.pom.xml clean package --Dmaven.test.strue=true'
+            }
+        }
+
+        stage('test') {
+            steps {
+                sh 'mvn -f aplicativo/monolito.pom.xml test'
             }
         }
     }
