@@ -78,7 +78,7 @@ pipeline {
                             try{
                                 echo "### creating environment with docker-compose ###"
                                 dir("aplicativo"){
-                                    docker.image('wjma90/mvn3-jdk8-curso-devops').inside('--network="${NETWORK_AUX}" -e "ARTIFACTORY_CREDENTIALS_USR=${ARTIFACTORY_USR}" -e "ARTIFACTORY_CREDENTIALS_PSW=${ARTIFACTORY_PSW}" -e "ARTIFACTORY_REPOSITORY=${ARTIFACTORY_REPOSITORY}" -v "/var/run/docker.sock:/var/run/docker.sock"') {
+                                    docker.image('wjma90/mvn3-jdk8-curso-devops').inside(' -e "ARTIFACTORY_CREDENTIALS_USR=${ARTIFACTORY_USR}" -e "ARTIFACTORY_CREDENTIALS_PSW=${ARTIFACTORY_PSW}" -e "ARTIFACTORY_REPOSITORY=${ARTIFACTORY_REPOSITORY}" -v "/var/run/docker.sock:/var/run/docker.sock"') {
                                         sh "docker-compose up -d --build"
                                         sh "docker network connect ${NETWORK_AUX} ${CONTAINER_NAME}"
                                         
@@ -107,7 +107,7 @@ pipeline {
                                 echo "Error: ${err}" 
                                 try{
                                     dir("aplicativo"){
-                                        docker.image('wjma90/mvn3-jdk8-curso-devops').inside('--network="${NETWORK_AUX}" -v "/var/run/docker.sock:/var/run/docker.sock"') {
+                                        docker.image('wjma90/mvn3-jdk8-curso-devops').inside(' -v "/var/run/docker.sock:/var/run/docker.sock"') {
                                             sh "docker-compose down -v"
                                         }
                                     }
