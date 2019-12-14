@@ -6,7 +6,7 @@ pipeline {
 
    environment {
         SONAR_HOST = 'http://172.18.0.1:9000'
-        NETWORK_AUX = "aplicativomvp_default"
+        NETWORK_AUX = "aplicativo_backend_default"
         CONTAINER_NAME = "monolito"
         HOST_APP = "http://${CONTAINER_NAME}:8090"
         APP_HEALTHCHECK = "${HOST_APP}/v2/api-docs"
