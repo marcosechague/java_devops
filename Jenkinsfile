@@ -19,7 +19,16 @@ pipeline {
                 }
             }
         }
+
+         stage('Unit Test'){
+            steps{
+                script {
+                    sh "mvn -Dmaven.repo.local=/home/.m2/repository -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode test"
+                }
+            }
+        }
         
+
         stage('Scan Sonar Backend'){
             steps{
                 script {
