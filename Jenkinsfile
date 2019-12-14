@@ -2,12 +2,14 @@
 
 pipeline {
 
-     agent {
-        docker { image 'maven:3.6-jdk-8-alpine' }
-    }
+     agent any
 
     environment {
         SONAR_HOST = 'http://172.18.0.1:9000'
+        NETWORK_AUX = "aplicativo-mvp_default"
+        CONTAINER_NAME = "monolito"
+        HOST_APP = "http://${CONTAINER_NAME}:8090"
+        APP_HEALTHCHECK = "${HOST_APP}/v2/api-docs"
     }
     stages {
 
@@ -15,7 +17,9 @@ pipeline {
         stage('Build Backend'){
             steps{
                 script {
-                    sh "mvn -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode package -Dmaven.test.skip=true"
+                    docker.image('maven:3.6-jdk-8-alpine').inside('-v "/home/.m2:/home/.m2"') {
+                        sh "mvn -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode package -Dmaven.test.skip=true"
+                    }
                 }
             }
         }
@@ -23,7 +27,9 @@ pipeline {
          stage('Unit Test'){
             steps{
                 script {
-                    sh "mvn -Dmaven.repo.local=/home/.m2/repository -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode test"
+                    docker.image('maven:3.6-jdk-8-alpine').inside('-v "/home/.m2:/home/.m2"') {
+                        sh "mvn -Dmaven.repo.local=/home/.m2/repository -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode test"
+                    }
                 }
             }
         }
@@ -32,8 +38,86 @@ pipeline {
         stage('Scan Sonar Backend'){
             steps{
                 script {
-                    sh "mvn -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode sonar:sonar -Dsonar.host.url=${SONAR_HOST}"
+                    docker.image('maven:3.6-jdk-8-alpine').inside('-v "/home/.m2:/home/.m2"') {
+                        sh "mvn -f ${env.WORKSPACE}/aplicativo/monolito/pom.xml -Dmaven.repo.local=/home/.m2/repository --batch-mode sonar:sonar -Dsonar.host.url=${SONAR_HOST}"
+                    }
                 }
+            }
+        }
+
+
+        stage('Integration Test'){
+            steps{
+                parallel(
+                    test: {
+                        script {
+                            try{
+                                echo "### creating environment with docker-compose ###"
+                                dir("aplicativo"){
+                                    docker.image('wjma90/mvn3-jdk8-curso-devops').inside('--network="${NETWORK_AUX}"  -v "/var/run/docker.sock:/var/run/docker.sock"') {
+                                        sh "docker-compose up -d --build"
+                                        sh "docker network connect ${NETWORK_AUX} ${CONTAINER_NAME}"
+                                        
+                                        //waiting for the application
+                                        timeout(time: 300, unit: 'SECONDS') {
+                                            waitUntil {
+                                                try {
+                                                    sh "curl -s --head  --request GET  ${APP_HEALTHCHECK} | grep '200'"
+                                                    return true
+                                                } catch (Exception e) {
+                                                        return false
+                                                }
+                                            }
+                                        }
+
+                                        echo "### HUBO CONEXION CON LA APLICACION ###"
+
+                                        sh "mvn -Dmaven.repo.local=/home/.m2/repository -f ../testing/integration/pom.xml --batch-mode test -Dbackend=${HOST_APP}"
+
+                                        echo "### Integration TEST FINISHED ###"
+
+                                        sh "docker-compose down -v"
+                                    }
+                                }
+                            }catch(err){
+                                echo "Error: ${err}" 
+                                try{
+                                    dir("aplicativo"){
+                                        docker.image('wjma90/mvn3-jdk8-curso-devops').inside('--network="${NETWORK_AUX}" -v "/var/run/docker.sock:/var/run/docker.sock"') {
+                                            sh "docker-compose down -v"
+                                        }
+                                    }
+                                }catch(err2){
+                                    echo "Error2: ${err2}" 
+                                }
+
+                                error "Integration TEST with ERROR... Please verify"
+                            }
+                        }
+                    },
+                    logs : {
+                        script {
+                            //waiting for the application
+                            timeout(time: 330, unit: 'SECONDS') {
+                                waitUntil {
+                                    try {
+                                        sh "curl -s --head  --request GET  ${APP_HEALTHCHECK} | grep '200'"
+                                        return true
+                                    } catch (Exception e) {
+                                        return false
+                                    }
+                                }
+                            }
+
+                            dir("aplicativo"){
+                                docker.image('wjma90/mvn3-jdk8-curso-devops').inside('--network="${NETWORK_AUX}"  -v "/var/run/docker.sock:/var/run/docker.sock"') {
+                                    sh "docker-compose ps"
+                                    sh "docker-compose logs -f ${CONTAINER_NAME} mysql_server"
+                                }
+                            }
+                        }
+                    }
+                )
             }
         }
         
